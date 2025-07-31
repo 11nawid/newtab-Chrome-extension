@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:; font-src 'self' data:;">
+    <title>NovaTab</title>
+    <style>
+        :root {
+            --bg-dark: #0f0c29;
+            --bg-light: #f8f9fa;
+            --accent-dark: #6e45e2;
+            --accent-light: #4a80f0;
+            --text-dark: #f0f0f0;
+            --text-light: #2d3748;
+            --card-dark: rgba(30, 30, 60, 0.75);
+            --card-light: rgba(255, 255, 255, 0.92);
+            --blur-amount: 10px;
+            --border-radius: 16px;
+            --transition-speed: 0.25s;
+            --glass-dark: rgba(15, 12, 41, 0.65);
+            --glass-light: rgba(248, 249, 250, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: 
+                background-color var(--transition-speed), 
+                color var(--transition-speed), 
+                opacity var(--transition-speed),
+                transform var(--transition-speed);
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Inter Regular'), local('Inter-Regular');
+            font-display: swap;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            color: var(--text-dark);
+            background: var(--bg-dark);
+        }
+
+        body.light-mode {
+            color: var(--text-light);
+            background: var(--bg-light);
+        }
+
+        #video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.9;
+            transition: opacity 0.5s ease;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--glass-dark) 0%, rgba(36,34,62,0.7) 100%);
+            z-index: -1;
+            backdrop-filter: blur(2px);
+        }
+
+        .light-mode .video-overlay {
+            background: linear-gradient(135deg, var(--glass-light) 0%, rgba(233,236,239,0.6) 100%);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 2.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .weather-widget {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--card-dark);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            font-size: 0.95rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .weather-widget {
+            background: var(--card-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .time-date {
+            text-align: center;
+            background: var(--card-dark);
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .time-date {
+            background: var(--card-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .time {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, var(--accent-dark), #a18cd1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .light-mode .time {
+            background: linear-gradient(90deg, var(--accent-light), #4facfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .date {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.3rem;
+            font-weight: 500;
+        }
+
+        /* Greeting */
+        .greeting-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .greeting {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 300;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            background: var(--card-dark);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .greeting {
+            text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--card-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .greeting-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: inherit;
+            font-weight: inherit;
+            color: inherit;
+            text-align: center;
+            max-width: 200px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .light-mode .greeting-input {
+            border-bottom-color: rgba(0,0,0,0.2);
+        }
+
+        /* Search */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin: 2.5rem 0;
+        }
+
+        .search-bar {
+            width: 100%;
+            max-width: 800px;
+            padding: 1.2rem 2rem;
+            border-radius: 50px;
+            border: none;
+            outline: none;
+            font-size: 1.1rem;
+            background: var(--card-dark);
+            color: var(--text-dark);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .search-bar {
+            background: var(--card-light);
+            color: var(--text-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .search-bar::placeholder {
+            color: inherit;
+            opacity: 0.7;
+        }
+
+        /* Quick Links */
+        .quick-links-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1000px;
+            /* padding: 1.5rem;
+            border-radius: var(--border-radius);
+            background: var(--card-dark);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1); */
+        }
+
+        .light-mode .quick-links {
+            background: var(--card-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .link-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .link-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .link-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            background: rgba(110, 69, 226, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-size: 1.6rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .link-icon {
+            background: rgba(74, 128, 240, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .link-item:hover .link-icon {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .link-name {
+            font-size: 0.9rem;
+            text-align: center;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        /* Settings */
+        .settings-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background: var(--card-dark);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: none;
+            color: inherit;
+            font-size: 1.4rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: transform 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-btn:hover {
+            transform: rotate(30deg) scale(1.1);
+        }
+
+        .light-mode .settings-btn {
+            background: var(--card-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-panel {
+            position: fixed;
+            bottom: 6.5rem;
+            right: 2rem;
+            background: var(--card-dark);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            padding: 1.8rem;
+            border-radius: var(--border-radius);
+            width: 320px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .settings-panel {
+            background: var(--card-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-panel.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .close-settings:hover {
+            opacity: 1;
+        }
+
+        .settings-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .light-mode .settings-section {
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+
+        .settings-section-title {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-dark);
+        }
+
+        .light-mode input:checked + .slider {
+            background-color: var(--accent-light);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .video-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .video-option {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.05);
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .light-mode .video-option {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .video-option:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .light-mode .video-option:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .video-option input {
+            margin-right: 0.8rem;
+        }
+
+        .video-option.active {
+            background: rgba(110, 69, 226, 0.2);
+            border: 1px solid var(--accent-dark);
+        }
+
+        .light-mode .video-option.active {
+            background: rgba(74, 128, 240, 0.2);
+            border: 1px solid var(--accent-light);
+        }
+
+        /* Video Controls */
+        .video-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+
+        .video-btn {
+            background: var(--card-dark);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0.8;
+        }
+
+        .video-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .light-mode .video-btn {
+            background: var(--card-light);
+            color: var(--text-light);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .bottom-section {
+                flex-direction: column;
+            }
+            
+            .todo-widget, .quote-widget {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .quick-links {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .time {
+                font-size: 1.6rem;
+            }
+            
+            .greeting {
+                font-size: 1.8rem;
+                padding: 0.8rem 1.5rem;
+            }
+            
+            .search-bar {
+                padding: 1rem 1.8rem;
+            }
+            
+            .settings-panel {
+                width: 280px;
+                right: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .top-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .weather-widget, .time-date {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .quick-links {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            }
+            
+            .link-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.4rem;
+            }
+            
+            .settings-panel {
+                width: calc(100% - 3rem);
+                right: 1.5rem;
+                bottom: 6rem;
+            }
+            
+            .video-controls {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <video autoplay muted loop id="video-bg">
+        <source src="videos/3.mp4" type="video/mp4">
+    </video>
+    
+    <div class="video-controls">
+        <button class="video-btn" id="mute-btn">🔇</button>
+        <button class="video-btn" id="change-video-btn">🔄</button>
+    </div>
+    
+    <div class="video-overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="weather-widget">
+                <span id="weather-icon">🌤️</span>
+                <span id="weather-temp">24°C</span>
+                <span id="weather-location">New York</span>
+            </div>
+            <div class="time-date">
+                <div class="time" id="time">12:34</div>
+                <div class="date" id="date">Monday, June 10</div>
+            </div>
+        </div>
+
+        <!-- Greeting -->
+        <div class="greeting-container">
+            <div class="greeting" id="greeting">
+                Good Afternoon, <span id="user-name" contenteditable="true">User</span>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="Search or type a URL" id="search-input">
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links-container">
+            <div class="quick-links" id="quick-links">
+                <!-- Links will be added dynamically -->
+            </div>
+        </div>
+
+        <!-- Settings Button -->
+        <button class="settings-btn" id="settings-btn">⚙️</button>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-header">
+                <div class="settings-title">Settings</div>
+                <button class="close-settings" id="close-settings">×</button>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-section-title">Appearance</div>
+                <div class="settings-option">
+                    Dark Mode
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-option">
+                    Blur Effect
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="blur-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-section-title">Background</div>
+                <div class="video-options">
+                    <label class="video-option active" id="video-option-1">
+                        <input type="radio" name="bg-video" value="videos/3.mp4" checked>
+                        Theme 1
+                    </label>
+                    <label class="video-option" id="video-option-2">
+                        <input type="radio" name="bg-video" value="videos/2.mp4">
+                        Theme 2
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/1.mp4">
+                        Theme 3
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/4.mp4">
+                        Theme 4
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/5.mp4">
+                        Theme 5
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/6.mp4">
+                        Theme 6
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/7.mp4">
+                        Theme 7
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/8.mp4">
+                        Theme 8
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/9.mp4">
+                        Theme 9
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/11.mp4">
+                        Theme 10
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/10.mp4">
+                        Theme 11
+                    </label>
+                    
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/12.mp4">
+                        Theme 12
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/13.mp4">
+                        Theme 13
+                    </label>
+                    <label class="video-option" id="video-option-3">
+                        <input type="radio" name="bg-video" value="videos/14.mp4">
+                        Theme 14
+                    </label>
+                    <label class="video-option" id="video-option-4">
+                        <input type="radio" name="bg-video" value="">
+                        No Video
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="script.js"></script>
+</body>
+</html>
