@@ -62,9 +62,7 @@ Now, every new tab will open with your custom NovaTab interface.
 - Search engine integration
 - Save user preferences in localStorage
 
-## 📸 Screenshots
-
-> Add screenshots of your UI here for better GitHub presentation.
+## 📸 Demo Video
 [![Demo Video](demo/thumbnail.png)](demo/video.mp4)
 
 ---
