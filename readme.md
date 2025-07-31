@@ -65,6 +65,7 @@ Now, every new tab will open with your custom NovaTab interface.
 ## 📸 Screenshots
 
 > Add screenshots of your UI here for better GitHub presentation.
+[![Demo Video](demo/thumbnail.png)](demo/video.mp4)
 
 ---
 
