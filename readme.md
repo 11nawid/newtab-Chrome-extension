@@ -64,7 +64,7 @@ Now, every new tab will open with your custom NovaTab interface.
 
 ## 📸 Demo Video
 
-[![Watch the Demo](screenshots/thumbnail.png)](https://www.youtube.com/watch?v=7U22qgfeONY)
+[![Watch the Demo](thumbnail.png)](https://www.youtube.com/watch?v=7U22qgfeONY)
 
 
 ---
