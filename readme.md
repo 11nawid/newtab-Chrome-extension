@@ -63,7 +63,9 @@ Now, every new tab will open with your custom NovaTab interface.
 - Save user preferences in localStorage
 
 ## 📸 Demo Video
-[![Demo Video](https://www.youtube.com/watch?v=7U22qgfeONY)
+
+[![Watch the Demo](screenshots/thumbnail.png)](https://www.youtube.com/watch?v=7U22qgfeONY)
+
 
 ---
 
